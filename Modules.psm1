@@ -35,6 +35,73 @@ function Get-FunctionName {
     return [string]$(Get-PSCallStack)[$StackNumber].FunctionName
 }
 
+Function REST-LCMV2-Query-Versions {
+  Param (
+    [string] $PEClusterIP,
+    [string] $PxClusterPass,
+    [string] $PxClusterUser,
+    [bool] $silent = $false
+  )
+
+  $credPair = "$($PxClusterUser):$($PxClusterPass)"
+  $encodedCredentials = [System.Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes($credPair))
+  $headers = @{ Authorization = "Basic $encodedCredentials" }
+
+  $URL = "https://$($PEClusterIP):9440/api/nutanix/v3/groups"
+
+$Payload= @"
+{
+  "entity_type": "lcm_entity_v2",
+  "group_member_count": 500,
+  "group_member_attributes": [{
+    "attribute": "id"
+  }, {
+    "attribute": "uuid"
+  }, {
+    "attribute": "entity_model"
+  }, {
+    "attribute": "version"
+  }, {
+    "attribute": "location_id"
+  }, {
+    "attribute": "entity_class"
+  }, {
+    "attribute": "description"
+  }, {
+    "attribute": "last_updated_time_usecs"
+  }, {
+    "attribute": "request_version"
+  }, {
+    "attribute": "_master_cluster_uuid_"
+  }, {
+    "attribute": "entity_type"
+  }, {
+    "attribute": "single_group_uuid"
+  }],
+  "query_name": "lcm:EntityGroupModel",
+  "grouping_attribute": "location_id",
+  "filter_criteria": "entity_type==software;_master_cluster_uuid_==[no_val]"
+}
+"@ 
+
+  $JSON = $Payload 
+  try{
+    $task = Invoke-RestMethod -Uri $URL -method "post" -body $JSON -ContentType 'application/json' -headers $headers;
+  } catch {
+    if ($silent -eq $false){
+      sleep 10
+      $FName = Get-FunctionName;write-log -message "Error Caught on function $FName" -sev "WARN"
+  
+      $task = Invoke-RestMethod -Uri $URL -method "post" -body $JSON -ContentType 'application/json' -headers $headers;
+    }  
+  }
+  if ($debug -ge 2){
+    write-log -message "We found $($task.group_results.entity_results.count) items."
+  }
+  Return $task
+} 
+
+
 Function REST-Get-PE-Hosts {
   Param (
     [string] $PEClusterIP,

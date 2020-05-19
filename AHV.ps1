@@ -44,6 +44,29 @@ $AHVHosts = REST-Get-PE-Hosts `
   -PxClusterPass $PECreds.getnetworkcredential().password
 
 write-log -message "You have $($AHVHost.entities.count) hosts in this cluster.."  
+
+$ExistingSoftwareGroup = REST-LCMV2-Query-Versions `
+  -PEClusterIP $PEClusterIP `
+  -PxClusterUser $PECreds.getnetworkcredential().username `
+  -PxClusterPass $PECreds.getnetworkcredential().password
+ 
+$UUIDS = ($ExistingSoftwareGroup.group_results.entity_results.data | where {$_.name -eq "uuid"}).values.values
+
+write-log -message "Getting Installed Software"
+
+foreach ($app in $UUIDS){
+  $nodeUUID = (((($ExistingSoftwareGroup.group_results.entity_results | where {$_.data.values.values -eq $app}).data | where {$_.name -eq "location_id"}).values.values | select -last 1) -split ":")[1]
+  $PHhost = $AHVhosts.entities | where {$_.uuid -match $nodeuuid}
+  $Entity = [PSCustomObject]@{
+    Version     = (($ExistingSoftwareGroup.group_results.entity_results | where {$_.data.values.values -eq $app}).data | where {$_.name -eq "version"}).values.values | select -last 1
+    Class       = (($ExistingSoftwareGroup.group_results.entity_results | where {$_.data.values.values -eq $app}).data | where {$_.name -eq "entity_class"}).values.values | select -last 1
+    Name        = (($ExistingSoftwareGroup.group_results.entity_results | where {$_.data.values.values -eq $app}).data | where {$_.name -eq "entity_model"}).values.values | select -last 1
+    SoftwareUUID= $app
+    HostUUID    = $nodeuuid
+  }
+  [array]$InstalledSoftwareList += $entity     
+}  
+
 if ($AHVHosts.entities.count -lt 1){
 
   write-log -message "You did not specify the correct Prism Element IP or Credentials" -sev "ERROR"
