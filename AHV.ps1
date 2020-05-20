@@ -43,7 +43,7 @@ $AHVHosts = REST-Get-PE-Hosts `
   -PxClusterUser $PECreds.getnetworkcredential().username `
   -PxClusterPass $PECreds.getnetworkcredential().password
 
-write-log -message "You have $($AHVHost.entities.count) hosts in this cluster.."  
+write-log -message "You have $($AHVHosts.entities.count) hosts in this cluster.."  
 
 $ExistingSoftwareGroup = REST-LCMV2-Query-Versions `
   -PEClusterIP $PEClusterIP `
@@ -87,7 +87,7 @@ if ($AHVHosts.entities.count -lt 1){
 
     write-log -message "This host has $($nics.count) Network Interfaces"
   
-    write-log -message "Lets builds a custom PS object for our HTML Conversion" -sev "Chapter"
+    write-log -message "Lets builds a custom PS object for host $($ahvhost.uuid)" -sev "Chapter"
   
     $secondsup = $AHVHost.bootTimeInUsecs / 100000000
     $timespan = new-timespan -seconds $secondsup
@@ -117,6 +117,9 @@ if ($AHVHosts.entities.count -lt 1){
     }
     [array]$HostsObjects += $HostsObject 
   }
+
+  write-log -message "Formatting our object for HTML Conversion" -sev "Chapter"
+
   [array] $cleanarray = $HostsObjects |ConvertTo-Json | convertfrom-json
 
   $cleanarray | ConvertTo-Html -Property Name,AHV_Ver,Model,BiosVer,BiosName,BMCVer,BMCName,HBAVer,HBAName,RAIDVer,RAIDName,Status,Power,Days_UP,Cores,CPU_Usage,RAM,RAM_Usage,Nics,Nics_UP | out-file .\Output.html
