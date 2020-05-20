@@ -80,7 +80,7 @@ $Payload= @"
   }],
   "query_name": "lcm:EntityGroupModel",
   "grouping_attribute": "location_id",
-  "filter_criteria": "entity_type==software;_master_cluster_uuid_==[no_val]"
+  "filter_criteria": ""
 }
 "@ 
 
