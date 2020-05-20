@@ -142,7 +142,7 @@ Function write-log {
   if ($message -match "Task .* Completed"){
     $global:stoptime = get-date
   } 
-  if ($sev -eq "INFO" -and $Debug -ge $D){
+  if ($sev -eq "INFO" ){
     write-host "'$(get-date -format "dd-MMM-yy HH:mm:ss")' | INFO  | $message "
   } elseif ($sev -eq "WARN"){
     write-host "'$(get-date -format "dd-MMM-yy HH:mm:ss")' |'WARN' | $message " -ForegroundColor  Yellow
