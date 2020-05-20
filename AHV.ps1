@@ -119,5 +119,5 @@ if ($AHVHosts.entities.count -lt 1){
   }
   [array] $cleanarray = $HostsObjects |ConvertTo-Json | convertfrom-json
 
-  $cleanarray | ConvertTo-Html -Property Name,AHV_Ver,Model,Bios,Status,Power,Days_UP,Cores,CPU_Usage,RAM,RAM_Usage,Nics,Nics_UP | out-file .\Output.html
+  $cleanarray | ConvertTo-Html -Property Name,AHV_Ver,Model,BiosVer,BiosName,BMCVer,BMCName,HBAVer,HBAName,RAIDVer,RAIDName,Status,Power,Days_UP,Cores,CPU_Usage,RAM,RAM_Usage,Nics,Nics_UP | out-file .\Output.html
 }
