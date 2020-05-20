@@ -92,21 +92,28 @@ if ($AHVHosts.entities.count -lt 1){
     $secondsup = $AHVHost.bootTimeInUsecs / 100000000
     $timespan = new-timespan -seconds $secondsup
     $Nicsup = $nics | where {$_.linkSpeedInKbps -match "[0-9][0-9]"}
-  
+    $Software = $InstalledSoftwareList | where {$_.hostuuid -eq $ahvhost.uuid}
     $HostsObject = @{
-      Name      = $AHVHost.Name
-      AHV_Ver   = $AHVHost.hypervisorFullName
-      Model     = $AHVHost.blockModelName
-      Bios      = $AHVHost.bmcVersion
-      Status    = $AHVHost.state
-      Power     = $AHVHost.acropolisConnectionState
-      Days_UP   = $timespan.Days
-      Cores     = $AHVHost.numCpuCores
-      CPU_Usage = [math]::truncate($AHVHost.stats.hypervisor_cpu_usage_ppm / 10000)
-      RAM       = [math]::truncate($AHVHost.memoryCapacityInBytes /1000 /1024 /1024)
-      RAM_Usage = [math]::truncate($AHVHost.stats.hypervisor_memory_usage_ppm / 10000)
-      Nics      = $nics.count
-      Nics_UP   = $Nicsup.count
+      Name         = $AHVHost.Name
+      AHV_Ver      = $AHVHost.hypervisorFullName
+      Model        = $AHVHost.blockModelName
+      BiosVer      = ($Software | where {$_.class -eq "BIOS"} | select -first 1).Version
+      BiosName     = ($Software | where {$_.class -eq "BIOS"} | select -first 1).Name
+      BMCVer       = ($Software | where {$_.class -eq "BMCs"} | select -first 1).Version
+      BMCName      = ($Software | where {$_.class -eq "BMCs"} | select -first 1).Name
+      HBAVer       = ($Software | where {$_.class -eq "HBAs"} | select -first 1).Version
+      HBAName      = ($Software | where {$_.class -eq "HBAs"} | select -first 1).Name
+      RAIDVer      = ($Software | where {$_.class -eq "Raid Card"} | select -first 1).Version
+      RAIDName     = ($Software | where {$_.class -eq "Raid Card"} | select -first 1).Name
+      Status       = $AHVHost.state
+      Power        = $AHVHost.acropolisConnectionState
+      Days_UP      = $timespan.Days
+      Cores        = $AHVHost.numCpuCores
+      CPU_Usage    = [math]::truncate($AHVHost.stats.hypervisor_cpu_usage_ppm / 10000)
+      RAM          = [math]::truncate($AHVHost.memoryCapacityInBytes /1000 /1024 /1024)
+      RAM_Usage    = [math]::truncate($AHVHost.stats.hypervisor_memory_usage_ppm / 10000)
+      Nics         = $nics.count
+      Nics_UP      = $Nicsup.count
     }
     [array]$HostsObjects += $HostsObject 
   }
